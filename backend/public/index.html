@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login System</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 400px;
+      padding: 2rem;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+      color: #333;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #555;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+
+    button {
+      width: 100%;
+      padding: 0.75rem;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .toggle-form {
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .toggle-form a {
+      color: #4CAF50;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .toggle-form a:hover {
+      text-decoration: underline;
+    }
+
+    .message {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    .error {
+      background-color: #ffebee;
+      color: #c62828;
+    }
+
+    .success {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .hide {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Welcome</h1>
+
+  <!-- Login Form -->
+  <form id="loginForm">
+    <div class="form-group">
+      <label for="loginEmail">Email</label>
+      <input type="email" id="loginEmail" required>
+    </div>
+    <div class="form-group">
+      <label for="loginPassword">Password</label>
+      <input type="password" id="loginPassword" required>
+    </div>
+    <button type="submit">Login</button>
+    <div class="toggle-form">
+      <p>Don't have an account? <a id="showRegister">Register</a></p>
+    </div>
+    <div id="loginMessage" class="message hide"></div>
+  </form>
+
+  <!-- Register Form -->
+  <form id="registerForm" class="hide">
+    <div class="form-group">
+      <label for="registerName">Name</label>
+      <input type="text" id="registerName" required>
+    </div>
+    <div class="form-group">
+      <label for="registerEmail">Email</label>
+      <input type="email" id="registerEmail" required>
+    </div>
+    <div class="form-group">
+      <label for="registerPassword">Password</label>
+      <input type="password" id="registerPassword" required>
+    </div>
+    <button type="submit">Register</button>
+    <div class="toggle-form">
+      <p>Already have an account? <a id="showLogin">Login</a></p>
+    </div>
+    <div id="registerMessage" class="message hide"></div>
+  </form>
+</div>
+
+<script>
+  // DOM Elements
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+  const showRegister = document.getElementById('showRegister');
+  const showLogin = document.getElementById('showLogin');
+  const loginMessage = document.getElementById('loginMessage');
+  const registerMessage = document.getElementById('registerMessage');
+
+  // API URL - Change this to your server URL
+  const API_URL = 'http://localhost:5001/api';
+
+  // Toggle between login and register forms
+  showRegister.addEventListener('click', () => {
+    loginForm.classList.add('hide');
+    registerForm.classList.remove('hide');
+  });
+
+  showLogin.addEventListener('click', () => {
+    registerForm.classList.add('hide');
+    loginForm.classList.remove('hide');
+  });
+
+  // Handle login form submission
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+
+    try {
+      const response = await fetch(`${API_URL}/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.msg || 'Login failed');
+      }
+
+      // Save token and user data to localStorage
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      // Show success message
+      loginMessage.textContent = 'Login successful! Redirecting...';
+      loginMessage.classList.remove('hide', 'error');
+      loginMessage.classList.add('success');
+
+      // Redirect to dashboard or home page after successful login
+      setTimeout(() => {
+        window.location.href = '/dashboard.html';
+      }, 1500);
+
+    } catch (error) {
+      // Show error message
+      loginMessage.textContent = error.message;
+      loginMessage.classList.remove('hide', 'success');
+      loginMessage.classList.add('error');
+    }
+  });
+
+  // Handle register form submission
+  registerForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById('registerName').value;
+    const email = document.getElementById('registerEmail').value;
+    const password = document.getElementById('registerPassword').value;
+
+    try {
+      const response = await fetch(`${API_URL}/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name, email, password })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.msg || 'Registration failed');
+      }
+
+      // Save token to localStorage
+      localStorage.setItem('token', data.token);
+
+      // Show success message
+      registerMessage.textContent = 'Registration successful! Redirecting to login...';
+      registerMessage.classList.remove('hide', 'error');
+      registerMessage.classList.add('success');
+
+      // Redirect to login after successful registration
+      setTimeout(() => {
+        registerForm.classList.add('hide');
+        loginForm.classList.remove('hide');
+      }, 1500);
+
+    } catch (error) {
+      // Show error message
+      registerMessage.textContent = error.message;
+      registerMessage.classList.remove('hide', 'success');
+      registerMessage.classList.add('error');
+    }
+  });
+</script>
+</body>
+</html>
