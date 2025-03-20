@@ -19,6 +19,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_here";
 // ===== Database Connection =====
 mongoose.connect(MONGODB_URI)
     .then(() => console.log("MongoDB Connected"))
+    .then(() => console.log("Please direct to http://localhost:5001"))
     .catch(err => console.error("MongoDB Connection Error:", err));
 
 // ===== Models =====
